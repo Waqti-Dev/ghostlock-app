@@ -74,7 +74,20 @@ The local sandbox does not have Cargo, CMake, or an Android NDK installed, so th
 
 ## CI and artifact
 
-CI run, job results, artifact filename, and APK SHA-256 are intentionally left blank until the remediation branch is pushed and its pull-request workflow completes. The workflow now verifies that the APK is non-empty, passes `unzip -t`, and writes `GhostLock-release.apk.sha256`.
+CI run **37680289891** passed on commit `87038a7d5be1be67a63e0ee851184a5f8e04dae0`.
+
+* Build APK job **112994252453** — passed; native compilation, targeted regressions, Android release build, APK integrity, packaging, and checksum upload all passed.
+* Build Extractor (macOS) job **112994252031** — passed.
+* Build Extractor (Windows) job **112994252347** — passed.
+* The pre-release and Telegram jobs were correctly skipped for the pull-request event.
+
+Published APK artifact: `GhostLock-release.apk`
+
+```text
+5b814e212edc9389b66ceffab1dbf2dc15766203ea38486edba113057f2ee60a  GhostLock-release.apk
+```
+
+The workflow verifies that the APK is non-empty, passes `unzip -t`, and publishes `GhostLock-release.apk.sha256`.
 
 ## Remaining risk
 

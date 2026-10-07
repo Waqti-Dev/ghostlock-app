@@ -81,6 +81,12 @@ jobs:
         run: |
           export ANDROID_NDK_HOME="${{ runner.temp }}/ondk"
           export NDK_ROOT="$ANDROID_NDK_HOME"
+          make -C src ../build/host-test/ksud_cli_compat_test \
+            ../build/host-test/handoff_probe_test \
+            ../build/host-test/host_attack_dataflow_test
+          ./build/host-test/ksud_cli_compat_test
+          ./build/host-test/handoff_probe_test
+          ./build/host-test/host_attack_dataflow_test
           make -C src ghostlock
           "${{ runner.temp }}/ondk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip" --strip-all build/native/ghostlock || true
 
@@ -101,6 +107,12 @@ jobs:
 
       - name: Rename Release APK
         run: mv build/app/outputs/apk/release/*.apk GhostLock-release.apk
+
+      - name: Verify APK integrity
+        run: |
+          test -s GhostLock-release.apk
+          unzip -t GhostLock-release.apk
+          sha256sum GhostLock-release.apk | tee GhostLock-release.apk.sha256
 
       - name: Prepare extractor binaries
         run: |
@@ -129,6 +141,13 @@ jobs:
         with:
           name: GhostLock-release
           path: GhostLock-release.apk
+          archive: false
+
+      - name: Upload APK checksum
+        uses: actions/upload-artifact@v7
+        with:
+          name: GhostLock-release-sha256
+          path: GhostLock-release.apk.sha256
           archive: false
 
       - name: Upload kernel profiles

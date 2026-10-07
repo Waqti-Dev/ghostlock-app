@@ -39,6 +39,7 @@ CXX_SRCS := \
   core/session/exploit_session.cpp \
   core/session/root_child_frontend.cpp \
   core/session/backend/cve_2026_43499_backend.cpp \
+  core/session/ksud_cli_compat.cpp \
   core/session/handoff_probe.cpp \
   core/session/victim_process.cpp \
   core/session/victim_context.cpp \
@@ -120,7 +121,7 @@ NATIVE_HOST_TESTS := \
   tcp_zerocopy_route_test select_stack_route_test \
   target_constants_test native_resource_test \
   profile_binary_test futex_hash_test number_parse_test \
-  runtime_paths_test handoff_probe_test victim_context_test \
+  runtime_paths_test handoff_probe_test ksud_cli_compat_test victim_context_test \
   run_state_test address_space_test cpp_link_probe_test
 
 native-host-tests: $(addprefix $(HOST_BUILD_DIR)/,$(NATIVE_HOST_TESTS))
@@ -281,6 +282,10 @@ $(HOST_BUILD_DIR)/runtime_paths_test: core/tests/runtime_paths_test.cpp core/ses
 $(HOST_BUILD_DIR)/handoff_probe_test: core/tests/handoff_probe_test.cpp core/session/handoff_probe.cpp core/session/handoff_probe.hpp core/support/native_resource.cpp core/support/native_resource.hpp
 	@mkdir -p $(HOST_BUILD_DIR)
 	$(HOST_CXX) $(HOST_CXXFLAGS) -Icore core/tests/handoff_probe_test.cpp core/session/handoff_probe.cpp core/support/native_resource.cpp -o $@
+
+$(HOST_BUILD_DIR)/ksud_cli_compat_test: core/tests/ksud_cli_compat_test.cpp core/session/ksud_cli_compat.cpp core/session/ksud_cli_compat.hpp
+	@mkdir -p $(HOST_BUILD_DIR)
+	$(HOST_CXX) $(HOST_CXXFLAGS) -Icore core/tests/ksud_cli_compat_test.cpp core/session/ksud_cli_compat.cpp -o $@
 
 $(HOST_BUILD_DIR)/victim_context_test: core/tests/victim_context_test.cpp core/session/victim_context.cpp core/session/victim_context.hpp core/support/native_resource.cpp core/support/native_resource.hpp
 	@mkdir -p $(HOST_BUILD_DIR)

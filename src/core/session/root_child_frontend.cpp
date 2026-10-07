@@ -41,9 +41,14 @@ namespace ghostlock::session::frontend {
         usleep(session::g_exploit_session.profile.handoff_pre_dispatch_settle_ms() * 1000U);
         attack::timer_mark("exploit complete");
         if (!ever_rooted) {
+            pr_error("EXPLOIT_RESULT=failed\n");
+            pr_error("PRIVILEGE_BOUNDARY_RESULT=not-reached\n");
             pr_error("w2 never rooted a child\n");
             return StageResult::Failed;
         }
+        pr_success("EXPLOIT_RESULT=success\n");
+        pr_info("PRIVILEGE_BOUNDARY_RESULT=child-rooted uid=0,euid=0,seccomp_cleared=%d\n",
+                seccomp_ok);
         if (child_alive) {
             errno = 0;
             const ssize_t sent = write(pipes.cmd_write.get(), "G", 1);
@@ -84,14 +89,23 @@ namespace ghostlock::session::frontend {
 
         /* Fixup: permissive, load_policy, late-load. Module init re-enforces;
          * policy reload keeps it working after enforcing is back. */
-        if (kernelsu_ready)
+        if (kernelsu_ready) {
+            pr_success("KSU_MODULE_LOAD_RESULT=loaded\n");
             pr_success("KernelSU ready\n");
-        else if (handoff_result.ksu_log_failed)
+            pr_success("FINAL_SECURITY_RESULT=kernel-su-module-loaded\n");
+        } else if (handoff_result.ksu_log_failed) {
+            pr_warning("KSU_MODULE_LOAD_RESULT=not-loaded\n");
             pr_warning("KernelSU module load failed\n");
-        else if (seccomp_ok)
+            pr_warning("FINAL_SECURITY_RESULT=temporary-root-only\n");
+        } else if (seccomp_ok) {
+            pr_warning("KSU_MODULE_LOAD_RESULT=pending-or-unverified\n");
             pr_warning("temporary root ready; KernelSU module load pending\n");
-        else
+            pr_warning("FINAL_SECURITY_RESULT=temporary-root-only\n");
+        } else {
+            pr_warning("KSU_MODULE_LOAD_RESULT=not-loaded\n");
             pr_warning("temporary root ready; KernelSU module not loaded (W3 seccomp clear failed)\n");
+            pr_warning("FINAL_SECURITY_RESULT=temporary-root-only\n");
+        }
         return StageResult::Done;
     }
 } // namespace ghostlock::session::frontend
